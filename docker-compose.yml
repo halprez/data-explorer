@@ -1,0 +1,54 @@
+version: '2'
+
+networks:
+  influx:
+    driver: bridge
+  postgres:
+    driver: bridge
+
+services:
+
+  influxdb:
+    extends:
+      file: data-explorer.yml
+      service: influxdb
+    container_name: influxdb1
+    build: dockerfiles/influxdb
+    networks:
+      - influx
+
+  grafana:
+    extends:
+      file: data-explorer.yml
+      service: grafana
+    container_name: grafana1
+    build: dockerfiles/grafana
+    depends_on:
+      - influxdb
+      - postgres
+    links:
+      - influxdb:influxdb
+      - postgres:postgres
+    networks:
+      - postgres
+      - influx
+
+  pgadmin:
+    extends:
+      file: data-explorer.yml
+      service: pgadmin
+    container_name: pgadmin1
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+    networks:
+      - postgres
+
+  postgres:
+    extends:
+      file: data-explorer.yml
+      service: postgres
+    container_name: postgres1
+    networks:
+      - postgres
